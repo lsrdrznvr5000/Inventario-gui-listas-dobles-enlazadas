@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario GUI</title>
+    <script src="producto.js"></script>
+    <script src="inventario.js"></script>
+</head>
+<body>
+    <div id="App">
+        <form>
+            <label>Codigo:
+                <input type="text" id="txtCod" name="Código">
+            </label>
+            <label>Nombre:
+                <input type="text" id="txtNom" name="Nombre">
+            </label>
+            <label>Cantidad:
+                <input type="text" id="txtCant" name="Cantidad">
+            </label>
+            <label>Precio:
+                <input type="text" id="txtPrec" name="Precio">
+            </label>
+            <label>Busqueda por codigo:
+                <input type="text" id="txtSeek" name="Buscar">
+            </label>
+            <label>Eliminar por codigo:
+                <input type="text" id="txtDel" name="Eliminar">
+            </label>
+            <button type="button" id="btnSeek">Buscar</button>
+            <button type="button" id="btnDel">Eliminar</button>
+            <button type="button" id="btnAdd">Agregar</button>
+            <button type="button" id="btnList">Listar</button>
+            <button type="button" id="btnListInv">Listar Inverso</button>
+            <button type="button" id="btnExtrPrim">Extraer primero</button>
+            <button type="button" id="btnExtrUlt">Extraer ultimo</button>
+            <button type="reset">cancelar</button>
+        </form>
+        <div id="Detalles" style="white-space: pre-line"></div>
+        <div id="Historial" aria-live="polite"></div>
+    </div>
+</body>
+<script>
+    const inv=new Inventario();
+    const divDetalles=document.getElementById("Detalles");
+    const divHistorial=document.getElementById("Historial");
+
+    function registrarOperacion(detalle) {
+        const linea = document.createElement("p");
+        linea.textContent = detalle;
+        divHistorial.appendChild(linea);
+    }
+
+    const btnAdd=document.getElementById("btnAdd");
+    btnAdd.addEventListener("click",()=>{
+        const codigo=document.getElementById("txtCod").value.trim();
+        const nombre=document.getElementById("txtNom").value.trim();
+        const cantidad=document.getElementById("txtCant").value.trim();
+        const precio=document.getElementById("txtPrec").value.trim();
+        if (codigo === "") {
+            divDetalles.textContent = "Ingresa un codigo para agregar el producto.";
+            registrarOperacion("No se agrego el producto. Falta el codigo");
+            return;
+        }
+
+        let nuevo=new Producto(codigo, nombre, cantidad, precio);
+        if (!inv.agregar(nuevo)) {
+            divDetalles.textContent = `Ya hay un producto con el codigo ${codigo}`;
+            registrarOperacion(`No se agrego el producto. El codigo ${codigo} ya existe`);
+            return;
+        }
+        divDetalles.innerHTML = `<h3>Se agrego</h3>${nuevo.infoHTML()}`;
+        registrarOperacion(`Se agrego el producto con codigo ${codigo}`);
+    });
+
+    const btnSeek=document.getElementById("btnSeek");
+    btnSeek.addEventListener("click",()=>{
+        const codigoBuscar=document.getElementById("txtSeek").value.trim();
+        const encontrado=inv.buscarPorCodigo(codigoBuscar);
+        if (encontrado === null) {
+            divDetalles.textContent = `No se encontro el codigo ${codigoBuscar}.`;
+            registrarOperacion(`No se encontro el codigo ${codigoBuscar}.`);
+            return;
+        }
+        divDetalles.innerHTML = encontrado.infoHTML();
+        registrarOperacion(`Se encontro el producto con codigo ${codigoBuscar}`);
+    });
+
+    const btnDel=document.getElementById("btnDel");
+    btnDel.addEventListener("click",()=>{
+        const codigo=document.getElementById("txtDel").value.trim();
+        const eliminado=inv.eliminar(codigo);
+        if (eliminado === null) {
+            divDetalles.textContent = `No se encontro el codigo ${codigo} para eliminar`;
+            registrarOperacion(`No se encontró el código ${codigo} para su eliminacion`);
+            return;
+        }
+        divDetalles.innerHTML = `<h3>Se elimino</h3>${eliminado.infoHTML()}`;
+        registrarOperacion(`Se elimino el producto con codigo ${codigo}`);
+    });
+
+    const btnList=document.getElementById("btnList");
+    btnList.addEventListener("click",()=>{
+        divDetalles.innerHTML=inv.listar();
+        registrarOperacion("Se muestra el inventario en orden por codigo");
+    });
+
+    const btnListInv=document.getElementById("btnListInv");
+    btnListInv.addEventListener("click",()=>{
+        divDetalles.innerHTML=inv.listarInverso();
+        registrarOperacion("Se muestra el inventario en orden inverso");
+    });
+
+    const btnExtrPrim=document.getElementById("btnExtrPrim");
+    btnExtrPrim.addEventListener("click",()=>{
+        const extraido=inv.extraerPrimero();
+        if (extraido === null) {
+            divDetalles.textContent = "No hay productos para extraer";
+            registrarOperacion("Error de extraccion. El inventario esta vacio");
+            return;
+        }
+        divDetalles.innerHTML = `<h3>Se extrajo el primer producto</h3>${extraido.infoHTML()}`;
+        registrarOperacion(`Se extrajo el primer producto (codigo ${extraido.codigo})`);
+    });
+
+    const btnExtrUlt=document.getElementById("btnExtrUlt");
+    btnExtrUlt.addEventListener("click",()=>{
+        const extraido=inv.extraerUltimo();
+        if (extraido === null) {
+            divDetalles.textContent = "No hay productos para extraer";
+            registrarOperacion("Error de extraccion. El inventario esta vacio");
+            return;
+        }
+        divDetalles.innerHTML = `<h3>Se extrajo el ultimo producto</h3>${extraido.infoHTML()}`;
+        registrarOperacion(`Se extrajo el ultimo producto (codigo ${extraido.codigo}).`);
+    });
+</script>
+</html>
