@@ -1,43 +1,41 @@
 class Inventario {
     constructor() {
         this.primero = null;
-        this.anterior = null;
-        this.siguiente = null;
         this.longitud = 0;
     }
 
-    agregar(nuevo) {
+    agregar(producto) {
         if (this.primero === null) {
-            this.primero = nuevo;
-            this.primero.anterior = nuevo;
-            this.primero.siguiente = nuevo;
+            this.primero = producto;
+            this.primero.anterior = producto;
+            this.primero.siguiente = producto;
         } else if (this.primero.siguiente === null) {
-            this.primero.siguiente = nuevo;
-            this.primero.anterior = nuevo;
-            nuevo.anterior = this.primero;
-            nuevo.siguiente = this.primero;
+            this.primero.siguiente = producto;
+            this.primero.anterior = producto;
+            producto.anterior = this.primero;
+            producto.siguiente = this.primero;
         } else {
             let aux = this.primero;
             do {
                 aux = aux.siguiente;
             } while (aux.siguiente !== this.primero)
-            nuevo.anterior = aux;
-            aux.siguiente = nuevo;
-            nuevo.siguiente = this.primero;
-            this.primero.anterior = nuevo;
+            producto.anterior = aux;
+            aux.siguiente = producto;
+            producto.siguiente = this.primero;
+            this.primero.anterior = producto;
         }
     }
 
     listar() {
         if (this.primero === null) {
-            return "<p>El inventario esta vacio</p>";
+            return "<p>El inventario está vacío</p>";
         } else {
             let datos = "";
             let aux = this.primero;
             do {
-                datos += aux.producto.infoHTML();
+                datos += aux.infoHTML();
                 aux = aux.siguiente;
-            } while (aux.siguiente !== this.primero)
+            } while (aux !== this.primero);
             return datos;
         }
     }
@@ -47,9 +45,8 @@ class Inventario {
         if (nodo === null) {
             return null;
         }
-
         this.desenlazar(nodo);
-        return nodo.producto;
+        return nodo;
     }
 
     extraerPrimero() {
@@ -91,21 +88,21 @@ class Inventario {
 
     listarInverso() {
         if (this.primero === null) {
-            return "<p>El inventario esta vacio</p>";
+            return "<p>El inventario está vacío</p>";
         } else {
             let datos = "";
             let aux = this.primero;
             do {
-                datos += aux.producto.infoHTML();
-                aux = aux.anterior
-            } while (aux.anterior !== this.primero)
+                datos += aux.infoHTML();
+                aux = aux.anterior;
+            } while (aux !== this.primero);
             return datos;
         }
     }
 
     buscarPorCodigo(codigo) {
         const nodo = this.buscarNodoPorCodigo(codigo);
-        return nodo === null ? null : nodo.producto;
+        return nodo;
     }
 
     compararCodigos(a, b) {
@@ -115,35 +112,35 @@ class Inventario {
     }
 
     buscarNodoPorCodigo(codigo) {
-        let actual = this.cabeza;
-
-        while (actual !== null) {
-            const comparacion = this.compararCodigos(actual.producto.codigo, codigo);
-            if (comparacion === 0) {
+        if (this.primero === null) {
+            return null;
+        }
+        let actual = this.primero;
+        do {
+            const cmp = this.compararCodigos(actual.codigo, codigo);
+            if (cmp === 0) {
                 return actual;
             }
-            if (comparacion > 0) {
+            if (cmp > 0) {
                 return null;
             }
             actual = actual.siguiente;
-        }
-
+        } while (actual !== this.primero);
         return null;
     }
 
     desenlazar(nodo) {
-        if (nodo.anterior === null) {
-            this.primero = nodo.siguiente;
+        if (this.longitud === 1) {
+            this.primero = null;
         } else {
             nodo.anterior.siguiente = nodo.siguiente;
-        }
-
-        if (nodo.siguiente === null) {
-            this.primero = nodo.anterior;
-        } else {
             nodo.siguiente.anterior = nodo.anterior;
+            if (nodo === this.primero) {
+                this.primero = nodo.siguiente;
+            }
         }
-
+        nodo.anterior = null;
+        nodo.siguiente = null;
         this.longitud--;
     }
 }
