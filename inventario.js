@@ -1,61 +1,45 @@
 class Inventario {
     constructor() {
-        this.cabeza = null;
-        this.cola = null;
+        this.primero = null;
+        this.anterior = null;
+        this.siguiente = null;
         this.longitud = 0;
     }
 
-    agregar(producto) {
-        let actual = this.cabeza;
-        let anterior = null;
-
-        while (actual !== null) {
-            const comparacion = this.compararCodigos(actual.producto.codigo, producto.codigo);
-            if (comparacion === 0) {
-                return false;
-            }
-            if (comparacion > 0) {
-                break;
-            }
-
-            anterior = actual;
-            actual = actual.siguiente;
-        }
-
-        const nuevo = {
-            producto: producto,
-            anterior: anterior,
-            siguiente: actual
-        };
-
-        if (anterior === null) {
-            this.cabeza = nuevo;
+    agregar(nuevo) {
+        if (this.primero === null) {
+            this.primero = nuevo;
+            this.primero.anterior = nuevo;
+            this.primero.siguiente = nuevo;
+        } else if (this.primero.siguiente === null) {
+            this.primero.siguiente = nuevo;
+            this.primero.anterior = nuevo;
+            nuevo.anterior = this.primero;
+            nuevo.siguiente = this.primero;
         } else {
-            anterior.siguiente = nuevo;
+            let aux = this.primero;
+            do {
+                aux = aux.siguiente;
+            } while (aux.siguiente !== this.primero)
+            nuevo.anterior = aux;
+            aux.siguiente = nuevo;
+            nuevo.siguiente = this.primero;
+            this.primero.anterior = nuevo;
         }
-
-        if (actual === null) {
-            this.cola = nuevo;
-        } else {
-            actual.anterior = nuevo;
-        }
-
-        this.longitud++;
-        return true;
     }
 
     listar() {
-        if (this.cabeza === null) {
+        if (this.primero === null) {
             return "<p>El inventario esta vacio</p>";
+        } else {
+            let datos = "";
+            let aux = this.primero;
+            do {
+                datos += aux.producto.infoHTML();
+                aux = aux.siguiente;
+            } while (aux.siguiente !== this.primero)
+            return datos;
         }
-
-        let datos = "";
-        let actual = this.cabeza;
-        while (actual !== null) {
-            datos += actual.producto.infoHTML();
-            actual = actual.siguiente;
-        }
-        return datos;
     }
 
     eliminar(codigo) {
@@ -69,37 +53,54 @@ class Inventario {
     }
 
     extraerPrimero() {
-        if (this.cabeza === null) {
+        if (this.primero === null) {
             return null;
         }
-
-        const nodo = this.cabeza;
-        this.desenlazar(nodo);
-        return nodo.producto;
+        const aux = this.primero;
+        if (this.primero.siguiente === this.primero) {
+            this.primero = null;
+            return aux;
+        }
+        let ultimo = this.primero.siguiente;
+        while (ultimo.siguiente !== this.primero) {
+            ultimo = ultimo.siguiente;
+        }
+        ultimo.siguiente = this.primero.siguiente;
+        this.primero.siguiente.anterior = ultimo;
+        this.primero = this.primero.siguiente;
+        aux.siguiente = null;
+        aux.anterior = null;
+        return aux;
     }
 
     extraerUltimo() {
-        if (this.cola === null) {
+        if (this.primero === null) {
             return null;
+        } else {
+            let aux = this.primero;
+            let ult = null;
+            while (aux.siguiente.siguiente !== this.primero) {
+                aux += aux.siguiente;
+            }
+            ult = aux.siguiente;
+            aux.siguiente = this.primero;
+            this.primero.anterior = aux;
+            return ult;
         }
-
-        const nodo = this.cola;
-        this.desenlazar(nodo);
-        return nodo.producto;
     }
 
     listarInverso() {
-        if (this.cola === null) {
+        if (this.primero === null) {
             return "<p>El inventario esta vacio</p>";
+        } else {
+            let datos = "";
+            let aux = this.primero;
+            do {
+                datos += aux.producto.infoHTML();
+                aux = aux.anterior
+            } while (aux.anterior !== this.primero)
+            return datos;
         }
-
-        let datos = "";
-        let actual = this.cola;
-        while (actual !== null) {
-            datos += actual.producto.infoHTML();
-            actual = actual.anterior;
-        }
-        return datos;
     }
 
     buscarPorCodigo(codigo) {
@@ -132,13 +133,13 @@ class Inventario {
 
     desenlazar(nodo) {
         if (nodo.anterior === null) {
-            this.cabeza = nodo.siguiente;
+            this.primero = nodo.siguiente;
         } else {
             nodo.anterior.siguiente = nodo.siguiente;
         }
 
         if (nodo.siguiente === null) {
-            this.cola = nodo.anterior;
+            this.primero = nodo.anterior;
         } else {
             nodo.siguiente.anterior = nodo.anterior;
         }
